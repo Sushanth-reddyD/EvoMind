@@ -3,13 +3,11 @@
 import logging
 import subprocess
 import tempfile
-import os
-import signal
 from typing import Dict, Any, Optional
 from pathlib import Path
 import json
 
-from evomind.sandbox.policies import SandboxPolicy, ResourcePolicy, SecurityPolicy
+from evomind.sandbox.policies import SandboxPolicy, ResourcePolicy
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +18,7 @@ class SandboxExecutor:
     Implements isolation using subprocess with resource limits.
     In production: use gVisor, nsjail, or Firecracker for stronger isolation.
     """
-    
+
     def __init__(
         self,
         default_policy: Optional[SandboxPolicy] = None,
@@ -29,7 +27,7 @@ class SandboxExecutor:
         self.default_policy = default_policy or SandboxPolicy()
         self.work_dir = work_dir or Path(tempfile.gettempdir()) / "evomind_sandbox"
         self.work_dir.mkdir(exist_ok=True)
-    
+
     def execute(
         self,
         tool: Dict[str, Any],
@@ -47,24 +45,24 @@ class SandboxExecutor:
             Execution result
         """
         policy = policy or self.default_policy
-        
+
         logger.info(f"Executing tool {tool.get('tool_id', 'unknown')} in sandbox")
-        
+
         try:
             # Prepare execution environment
             exec_dir = self._prepare_environment(tool)
-            
+
             # Create execution script
             script_path = self._create_exec_script(tool, args, exec_dir)
-            
+
             # Execute with limits
             result = self._execute_with_limits(script_path, policy)
-            
+
             # Cleanup
             self._cleanup(exec_dir)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Sandbox execution error: {e}", exc_info=True)
             return {
@@ -73,20 +71,20 @@ class SandboxExecutor:
                 "stdout": "",
                 "stderr": str(e)
             }
-    
+
     def _prepare_environment(self, tool: Dict[str, Any]) -> Path:
         """Prepare isolated execution environment."""
         # Create temporary directory for this execution
         exec_dir = Path(tempfile.mkdtemp(dir=self.work_dir))
-        
+
         # Write tool code
         code = tool.get("artifact", {}).get("code", tool.get("code", ""))
         code_path = exec_dir / "tool_code.py"
         code_path.write_text(code)
-        
+
         logger.debug(f"Prepared environment at {exec_dir}")
         return exec_dir
-    
+
     def _create_exec_script(
         self,
         tool: Dict[str, Any],
@@ -125,11 +123,11 @@ except Exception as e:
     import traceback
     print(json.dumps({{"status": "error", "error": str(e), "traceback": traceback.format_exc()}}))
 """
-        
+
         script_path = exec_dir / "exec_script.py"
         script_path.write_text(script)
         return script_path
-    
+
     def _execute_with_limits(
         self,
         script_path: Path,
@@ -137,17 +135,17 @@ except Exception as e:
     ) -> Dict[str, Any]:
         """Execute script with resource limits."""
         resource_policy = policy.resource
-        
+
         # Build command
         cmd = [
             "python3",
             str(script_path)
         ]
-        
+
         try:
             # Set resource limits (simplified version)
             # In production: use cgroups, rlimits properly
-            
+
             process = subprocess.Popen(
                 cmd,
                 cwd=script_path.parent,
@@ -156,7 +154,7 @@ except Exception as e:
                 text=True,
                 preexec_fn=self._set_limits(resource_policy)
             )
-            
+
             # Wait with timeout
             try:
                 stdout, stderr = process.communicate(timeout=resource_policy.wall_time_limit)
@@ -170,7 +168,7 @@ except Exception as e:
                     "stdout": stdout,
                     "stderr": stderr
                 }
-            
+
             # Parse result
             if returncode == 0 and stdout:
                 try:
@@ -190,14 +188,14 @@ except Exception as e:
                     "stdout": stdout,
                     "stderr": stderr
                 }
-        
+
         except Exception as e:
             logger.error(f"Execution error: {e}")
             return {
                 "status": "error",
                 "error": str(e)
             }
-    
+
     def _set_limits(self, policy: ResourcePolicy):
         """Return function to set resource limits."""
         def limits():
@@ -216,9 +214,9 @@ except Exception as e:
                 )
             except Exception as e:
                 logger.warning(f"Could not set resource limits: {e}")
-        
+
         return limits
-    
+
     def _cleanup(self, exec_dir: Path) -> None:
         """Cleanup execution directory."""
         try:

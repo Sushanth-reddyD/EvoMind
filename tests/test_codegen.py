@@ -1,6 +1,5 @@
 """Tests for code generation."""
 
-import pytest
 from evomind.codegen.generator import CodeGenerator
 from evomind.codegen.validators import StaticValidator
 

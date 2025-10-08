@@ -1,17 +1,42 @@
 # EvoMind
 
-Production-ready AI Agent System with dynamic tool creation and execution capabilities.
+Production-ready AI Agent System with dynamic tool creation, Gemini LLM integration, and interactive UI.
+
+## 🚀 Quick Start
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/Sushanth-reddyD/EvoMind.git
+cd EvoMind
+
+# 2. Create virtual environment and install dependencies
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# 3. Set your Gemini API key (optional, for LLM features)
+export GEMINI_API_KEY="your_api_key_here"
+
+# 4. Run the interactive UI
+./run_ui.sh
+# Or: streamlit run ui/app.py
+```
+
+The UI will open at `http://localhost:8501` 🎉
 
 ## Overview
 
-EvoMind is a comprehensive AI agent framework that can dynamically author and execute its own Python tools in a secure, isolated environment. Built with production-grade patterns including:
+EvoMind is a comprehensive AI agent framework that can dynamically author and execute its own Python tools in a secure, isolated environment. Now with **Google Gemini LLM integration** and an **interactive Streamlit UI**!
 
-- **ReAct/ToT Planning**: Intelligent decision-making with ReAct (default) and Tree of Thoughts for complex tasks
-- **PAL Code Generation**: Program-Aided Language model approach for accurate code generation
-- **Sandboxed Execution**: Isolated execution environment with resource limits and security policies
-- **Tool Registry**: Versioned tool storage with semantic search and lifecycle management
-- **Reflexion Learning**: Self-correction and episodic memory for continuous improvement
-- **Observability**: Comprehensive metrics, logging, and audit trails
+### Key Features
+
+- **🤖 Gemini LLM Integration**: AI-powered code generation, planning, and chat
+- **🎨 Interactive UI**: Web-based interface with Streamlit
+- **🔄 Dual Mode**: LLM-powered or template-based generation
+- **🛡️ Safe Execution**: Sandboxed environment with resource limits
+- **🧠 Intelligent Planning**: ReAct (default) and Tree of Thoughts
+- **🔧 Dynamic Tools**: Generate Python functions on-the-fly
+- **📊 Observability**: Metrics, logging, and execution history
 
 ## Architecture
 

@@ -1,6 +1,5 @@
 """Tests for tool registry."""
 
-import pytest
 from evomind.registry.tool_registry import ToolRegistry, ToolMetadata
 
 

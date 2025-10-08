@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class StateType(str, Enum):
@@ -25,7 +25,7 @@ class StateTransition:
     """Represents a state transition."""
     from_state: StateType
     to_state: StateType
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -41,7 +41,7 @@ class AgentState:
     history: List[StateTransition] = field(default_factory=list)
     retry_count: int = 0
     max_retries: int = 3
-    
+
     def transition(self, to_state: StateType, metadata: Optional[Dict[str, Any]] = None) -> None:
         """Transition to a new state."""
         transition = StateTransition(
@@ -51,23 +51,23 @@ class AgentState:
         )
         self.history.append(transition)
         self.current_state = to_state
-    
+
     def add_feedback(self, category: str, details: Dict[str, Any]) -> None:
         """Add feedback entry."""
         self.feedback.append({
             "category": category,
             "details": details,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
-    
+
     def can_retry(self) -> bool:
         """Check if retry is allowed."""
         return self.retry_count < self.max_retries
-    
+
     def increment_retry(self) -> None:
         """Increment retry counter."""
         self.retry_count += 1
-    
+
     def reset(self) -> None:
         """Reset state for new request."""
         self.current_state = StateType.IDLE
@@ -81,12 +81,12 @@ class AgentState:
 
 class ContextManager:
     """Manages agent context including short-term and long-term memory."""
-    
+
     def __init__(self):
         self.short_term: Dict[str, Any] = {}
         self.long_term: Dict[str, Any] = {}
         self.episodic: List[Dict[str, Any]] = []
-    
+
     def build(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Build context from request."""
         return {
@@ -94,21 +94,21 @@ class ContextManager:
             "short_term": self.short_term,
             "relevant_history": self._get_relevant_history(request)
         }
-    
+
     def _get_relevant_history(self, request: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Retrieve relevant historical context."""
         # Simplified: return recent episodic memories
         return self.episodic[-5:] if self.episodic else []
-    
+
     def update_short_term(self, key: str, value: Any) -> None:
         """Update short-term memory."""
         self.short_term[key] = value
-    
+
     def add_episodic(self, episode: Dict[str, Any]) -> None:
         """Add episodic memory."""
-        episode["timestamp"] = datetime.utcnow().isoformat()
+        episode["timestamp"] = datetime.now(timezone.utc).isoformat()
         self.episodic.append(episode)
-    
+
     def clear_short_term(self) -> None:
         """Clear short-term memory."""
         self.short_term.clear()

@@ -1,6 +1,5 @@
 """Tests for planners."""
 
-import pytest
 from evomind.agent.planner import ReActPlanner, ToTPlanner, ReflexionMemory
 
 

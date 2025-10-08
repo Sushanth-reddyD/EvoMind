@@ -41,7 +41,7 @@ def main():
             result = agent.handle_request({"task": task})
             
             if result["status"] == "success":
-                print(f"   ✓ Success")
+                print("   ✓ Success")
             else:
                 print(f"   ⚠ Status: {result['status']}")
         

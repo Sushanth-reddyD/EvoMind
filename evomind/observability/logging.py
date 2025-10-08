@@ -3,17 +3,17 @@
 import logging
 import sys
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 
 class StructuredFormatter(logging.Formatter):
     """Structured JSON formatter for logs."""
-    
+
     def format(self, record: logging.LogRecord) -> str:
         """Format log record as JSON."""
         log_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -21,15 +21,15 @@ class StructuredFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno
         }
-        
+
         # Add exception info if present
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
-        
+
         # Add extra fields
         if hasattr(record, "extra"):
             log_data.update(record.extra)
-        
+
         return json.dumps(log_data)
 
 
@@ -46,7 +46,7 @@ def setup_logging(
         log_file: Optional log file path
     """
     log_level = getattr(logging, level.upper(), logging.INFO)
-    
+
     # Create formatter
     if structured:
         formatter = StructuredFormatter()
@@ -54,27 +54,27 @@ def setup_logging(
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
-    
+
     # Setup handlers
     handlers = []
-    
+
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     handlers.append(console_handler)
-    
+
     # File handler
     if log_file:
         file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(formatter)
         handlers.append(file_handler)
-    
+
     # Configure root logger
     logging.basicConfig(
         level=log_level,
         handlers=handlers
     )
-    
+
     # Set third-party loggers to WARNING
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -82,10 +82,10 @@ def setup_logging(
 
 class AuditLogger:
     """Audit logger for security-relevant events."""
-    
+
     def __init__(self):
         self.logger = logging.getLogger("evomind.audit")
-    
+
     def log_tool_creation(
         self,
         tool_id: str,
@@ -104,7 +104,7 @@ class AuditLogger:
                 "metadata": metadata
             }
         )
-    
+
     def log_execution(
         self,
         tool_id: str,
@@ -123,7 +123,7 @@ class AuditLogger:
                 "duration_ms": duration_ms
             }
         )
-    
+
     def log_policy_violation(
         self,
         violation_type: str,

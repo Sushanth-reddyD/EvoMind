@@ -1,6 +1,5 @@
 """Tests for sandbox executor."""
 
-import pytest
 from evomind.sandbox.executor import SandboxExecutor
 from evomind.sandbox.policies import SandboxPolicy, ResourcePolicy, SecurityPolicy
 

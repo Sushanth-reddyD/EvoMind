@@ -1,20 +1,20 @@
 """Security and resource policies for sandbox execution."""
 
 from dataclasses import dataclass
-from typing import Set, Optional
+from typing import Set
 
 
 @dataclass
 class ResourcePolicy:
     """Resource limits for sandbox execution."""
-    
+
     cpu_time_limit: int = 30  # seconds
     wall_time_limit: int = 60  # seconds
     memory_limit_mb: int = 512
     disk_limit_mb: int = 100
     max_processes: int = 1
     max_file_size_mb: int = 10
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -30,14 +30,14 @@ class ResourcePolicy:
 @dataclass
 class SecurityPolicy:
     """Security constraints for sandbox execution."""
-    
+
     network_enabled: bool = False
     allowed_hosts: Set[str] = None
     filesystem_readonly: bool = True
     allowed_write_paths: Set[str] = None
     allow_subprocess: bool = False
     allow_imports: Set[str] = None
-    
+
     def __post_init__(self):
         if self.allowed_hosts is None:
             self.allowed_hosts = set()
@@ -48,7 +48,7 @@ class SecurityPolicy:
                 "json", "re", "math", "datetime",
                 "typing", "dataclasses", "collections"
             }
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -64,16 +64,16 @@ class SecurityPolicy:
 @dataclass
 class SandboxPolicy:
     """Combined sandbox policy."""
-    
+
     resource: ResourcePolicy = None
     security: SecurityPolicy = None
-    
+
     def __post_init__(self):
         if self.resource is None:
             self.resource = ResourcePolicy()
         if self.security is None:
             self.security = SecurityPolicy()
-    
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {

@@ -3,9 +3,10 @@ pydantic>=2.0.0
 pydantic-settings>=2.0.0
 openai>=1.0.0
 anthropic>=0.3.0
+google-genai>=0.2.0
 
 # Sandbox and security
-seccomp>=0.1.0
+# seccomp>=0.1.0  # Not available on PyPI - use system seccomp if needed
 
 # Static analysis and validation
 bandit>=1.7.5
@@ -37,3 +38,7 @@ pytest-cov>=4.1.0
 python-dotenv>=1.0.0
 tenacity>=8.2.3
 pyyaml>=6.0
+
+# UI
+streamlit>=1.28.0
+gradio>=4.0.0

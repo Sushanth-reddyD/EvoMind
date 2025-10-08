@@ -1,6 +1,5 @@
 """Tests for agent controller."""
 
-import pytest
 from evomind.agent.controller import AgentController
 from evomind.agent.state import AgentState, StateType
 

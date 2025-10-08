@@ -1,7 +1,7 @@
 """REST API for EvoMind agent system."""
 
 from typing import Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 try:
@@ -47,20 +47,20 @@ def create_app(config: Optional[Config] = None) -> Any:
     """
     if not FASTAPI_AVAILABLE:
         raise ImportError("FastAPI not installed. Install with: pip install fastapi uvicorn")
-    
+
     config = config or Config.from_env()
-    
+
     app = FastAPI(
         title="EvoMind Agent API",
         description="REST API for EvoMind AI Agent System",
         version="0.1.0"
     )
-    
+
     # Initialize components
     agent = AgentController()
     registry = ToolRegistry()
     metrics = get_metrics_collector()
-    
+
     @app.get("/")
     def root():
         """Root endpoint."""
@@ -69,38 +69,38 @@ def create_app(config: Optional[Config] = None) -> Any:
             "version": "0.1.0",
             "status": "running"
         }
-    
+
     @app.get("/health")
     def health():
         """Health check endpoint."""
         return {
             "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
-    
+
     @app.post("/agent/request")
     def submit_request(request: AgentRequest):
         """Submit a request to the agent."""
-        start_time = datetime.utcnow()
-        
+        start_time = datetime.now(timezone.utc)
+
         try:
             result = agent.handle_request({
                 "task": request.task,
                 "args": request.args or {}
             })
-            
-            duration_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+
+            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
             metrics.record_request(result.get("status", "unknown"), duration_ms)
-            
+
             return JSONResponse(content=result)
-        
+
         except Exception as e:
             logger.error(f"Request failed: {e}", exc_info=True)
-            duration_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            duration_ms = (datetime.now(timezone.utc) - start_time).total_seconds() * 1000
             metrics.record_request("error", duration_ms)
-            
+
             raise HTTPException(status_code=500, detail=str(e))
-    
+
     @app.get("/tools")
     def list_tools(include_deprecated: bool = False):
         """List available tools."""
@@ -109,7 +109,7 @@ def create_app(config: Optional[Config] = None) -> Any:
             "count": len(tools),
             "tools": tools
         }
-    
+
     @app.get("/tools/{tool_id}")
     def get_tool(tool_id: str):
         """Get tool details."""
@@ -117,12 +117,12 @@ def create_app(config: Optional[Config] = None) -> Any:
         if not tool:
             raise HTTPException(status_code=404, detail="Tool not found")
         return tool
-    
+
     @app.get("/metrics")
     def get_metrics():
         """Get system metrics."""
         return metrics.get_metrics()
-    
+
     @app.get("/config")
     def get_config():
         """Get configuration (sanitized)."""
@@ -130,7 +130,7 @@ def create_app(config: Optional[Config] = None) -> Any:
         # Remove sensitive fields
         config_dict.pop("llm_api_key", None)
         return config_dict
-    
+
     return app
 
 
@@ -144,16 +144,16 @@ def run_server(host: str = "0.0.0.0", port: int = 8000):
     if not FASTAPI_AVAILABLE:
         print("Error: FastAPI not installed. Install with: pip install fastapi uvicorn")
         return 1
-    
+
     try:
         import uvicorn
     except ImportError:
         print("Error: uvicorn not installed. Install with: pip install uvicorn")
         return 1
-    
+
     config = Config.from_env()
     app = create_app(config)
-    
+
     uvicorn.run(
         app,
         host=host,
@@ -163,5 +163,4 @@ def run_server(host: str = "0.0.0.0", port: int = 8000):
 
 
 if __name__ == "__main__":
-    import sys
     run_server()
