@@ -17,10 +17,11 @@ class CodeGenerator:
     This reduces hallucinated math/logic errors.
     """
 
-    def __init__(self, llm_client: Optional[GeminiClient] = None, use_llm: bool = False):
+    def __init__(self, llm_client: Optional[GeminiClient] = None, use_llm: bool = False, allow_network: bool = False):
         self.llm_client = llm_client or (GeminiClient() if use_llm else None)
         self.use_llm = use_llm and self.llm_client is not None
-        self.validator = StaticValidator()
+        self.allow_network = allow_network
+        self.validator = StaticValidator(allow_network=allow_network)
         self.type_checker = TypeChecker()
         self.templates = CodeTemplates()
 
@@ -28,6 +29,9 @@ class CodeGenerator:
             logger.info("CodeGenerator initialized with Gemini LLM")
         else:
             logger.info("CodeGenerator initialized with template-based generation")
+        
+        if self.allow_network:
+            logger.warning("⚠️  Network access enabled - use with caution!")
 
     def create_tool(self, spec: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new tool from specification.

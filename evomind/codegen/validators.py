@@ -37,15 +37,19 @@ class ValidationResult:
 class StaticValidator:
     """Static code validator implementing multiple validation layers."""
 
-    def __init__(self):
-        self.dangerous_imports = {
+    def __init__(self, allow_network: bool = False):
+        """Initialize validator.
+        
+        Args:
+            allow_network: If True, allows network-related imports (urllib, requests, socket)
+        """
+        self.allow_network = allow_network
+        
+        # Always dangerous - never allow
+        self.always_dangerous = {
             "os",
             "subprocess",
             "ctypes",
-            "socket",
-            "http",
-            "urllib",
-            "requests",
             "multiprocessing",
             "threading",
             "__import__",
@@ -53,6 +57,22 @@ class StaticValidator:
             "exec",
             "compile"
         }
+        
+        # Network modules - conditionally allowed
+        self.network_imports = {
+            "socket",
+            "http",
+            "urllib",
+            "requests",
+            "httpx"
+        }
+        
+        # Build dangerous imports list based on network permission
+        if allow_network:
+            self.dangerous_imports = self.always_dangerous.copy()
+            logger.info("Network access enabled for validation")
+        else:
+            self.dangerous_imports = self.always_dangerous | self.network_imports
 
         self.allowed_imports = {
             "json",
@@ -63,8 +83,16 @@ class StaticValidator:
             "dataclasses",
             "collections",
             "itertools",
-            "functools"
+            "functools",
+            "string",
+            "statistics",
+            "decimal",
+            "fractions"
         }
+        
+        # Add network imports to allowed if network is enabled
+        if allow_network:
+            self.allowed_imports |= self.network_imports
 
     def validate(self, code: str) -> ValidationResult:
         """Run all validation checks."""

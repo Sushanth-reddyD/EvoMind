@@ -114,9 +114,14 @@ class GeminiClient:
         """
         system_instruction = """You are an expert Python code generator.
 Generate clean, efficient, well-documented Python code.
-Include type hints, docstrings, and error handling.
-Follow PEP 8 style guidelines.
-IMPORTANT: Return ONLY the Python code without any markdown formatting, explanations, or code blocks.
+Follow PEP 8 style guidelines and Python 3.10+ best practices.
+
+CRITICAL RULES:
+- Use lowercase built-in types: list, dict, tuple, set (NOT List, Dict, Tuple, Set from typing)
+- For type hints: list[int], dict[str, str], etc. (Python 3.10+ syntax)
+- NEVER instantiate type objects: NO List(), Dict(), Set() - use list(), dict(), set()
+- Only import from typing if you need Union, Optional, Any
+- Return ONLY the function code - no explanations, no markdown, no ``` blocks
 Do NOT wrap the code in ```python or ``` markers."""
 
         prompt = f"""Generate a Python function with the following specifications:
@@ -132,11 +137,14 @@ Output Specification:
 
 Requirements:
 - Include comprehensive docstring
-- Add type hints for all parameters and return value
-- Handle errors gracefully
+- Use modern Python 3.10+ type hints: list[int], dict[str, any] (NOT List, Dict from typing module)
+- NEVER use List(), Dict(), Set(), Tuple() - always use list(), dict(), set(), tuple()
+- Handle errors gracefully with try/except
 - Return a dictionary with 'status' and 'result' keys
 {"- Must complete within " + str(constraints.get('timeout', 30)) + " seconds" if constraints else ""}
 {"- Memory usage under " + str(constraints.get('memory_mb', 512)) + "MB" if constraints else ""}
+- Do NOT use network imports (requests, urllib, socket) - they will be blocked
+- Only use safe built-in modules: json, math, re, datetime, collections, itertools
 
 Return ONLY the Python function code. No markdown, no explanations, no ```python blocks."""
 
